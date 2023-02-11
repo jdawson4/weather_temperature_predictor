@@ -12,9 +12,14 @@ import pandas as pd
 import numpy as np
 from IPython.display import display
 import os
-#from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import r2_score
 #from sklearn.preprocessing import OrdinalEncoder
 seed = 3
+
+print('Loading data')
 
 list_of_files = {}
 for (dirpath, dirnames, filenames) in os.walk('hourly_weather'):
@@ -57,6 +62,8 @@ for k,v in list_of_files.items():
     
     df = df.merge(pd.read_csv(v), on='datetime', suffixes=(None,str(i)))
 
+print('Preprocessing data')
+
 # the idea here is that we want an algorithm which can predict the temperature
 # of new york at some hour in the future, given previous recorded values from
 # all over the world. As such, we'll leave in the recorded values for new york,
@@ -69,7 +76,7 @@ df = df.drop(['datetime'], axis=1)
 df = df.apply(pd.to_numeric, errors='raise', downcast='float')
 #display(df)
 df = df.fillna(-1)
-display(df)
+#display(df)
 
 '''
 # let's do our splitting first, before we mess up our test set!
@@ -79,7 +86,26 @@ X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.25, rando
 #print(df.shape)
 
 df = df.shift(periods=-24, fill_value=-1)
-dfs = np.array_split(df, (df.shape[0]//24)//7) # break into weeks
-y = np.array_split(y, (df.shape[0]//24)//7)
-print(dfs)
-print(y)
+df = df.iloc[0:(df.shape[0]//(7*24))*24*7]
+dfs = np.array(np.array_split(df, (df.shape[0]//24)//7)) # break into weeks
+dfs = np.reshape(dfs, (-1, dfs.shape[1] * dfs.shape[2])) # painful! I hate to do it!
+y = y[0:(y.size//(7*24))*24*7]
+y = np.reshape(np.array(y), (-1,7*24))
+
+X_train, X_test, y_train, y_test = train_test_split(dfs, y[:,1], test_size=0.25, random_state=seed, shuffle=True)
+regr = RandomForestRegressor(max_depth=10, random_state=seed, n_estimators=25)
+
+print('Fitting model')
+regr.fit(X_train, y_train)
+
+print('Predicting')
+
+y_pred = regr.predict(X_test)
+
+print('Scoring')
+
+score = mean_absolute_error(y_test, y_pred)
+r2Score = r2_score(y_test, y_pred)
+
+print('Score', score)
+print('r2Score', r2Score)
