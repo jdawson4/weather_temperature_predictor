@@ -69,3 +69,14 @@ df = df.apply(pd.to_numeric, errors='raise', downcast='float')
 #display(df)
 df = df.fillna(-1)
 display(df)
+
+'''
+# let's do our splitting first, before we mess up our test set!
+X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.25, random_state=seed, shuffle=False)
+'''
+
+#print(df.shape)
+
+df = df.shift(periods=-24, fill_value=-1)
+dfs = np.array_split(df, (df.shape[0]//24)//7) # break into weeks
+print(dfs)
