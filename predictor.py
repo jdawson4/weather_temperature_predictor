@@ -10,12 +10,26 @@
 
 import pandas as pd
 from IPython.display import display
+import os
 
-df1 = pd.read_csv('hourly_weather/temperature.csv')
-display(df1)
+list_of_files = {}
+for (dirpath, dirnames, filenames) in os.walk('hourly_weather'):
+    for filename in filenames:
+        if filename.endswith('.csv'):
+            list_of_files[filename] = os.sep.join([dirpath, filename])
 
-df2 = pd.read_csv('hourly_weather/pressure.csv')
-display(df2)
+df = pd.read_csv('hourly_weather/temperature.csv')
+#display(df)
 
-df3 = df2.merge(df1, on='datetime') # ah-ha!
-display(df3)
+Y = df['New York'] # let's try to predict the temps in New York!
+
+i=0
+for k,v in list_of_files.items():
+    if k=='temperature.csv':
+        continue
+    if k=='city_attributes.csv':
+        continue
+    i+=1
+    df = df.merge(pd.read_csv(v), on='datetime', suffixes=(None,str(i)))
+
+#display(df)
