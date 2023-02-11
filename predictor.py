@@ -11,5 +11,11 @@
 import pandas as pd
 from IPython.display import display
 
-df = pd.read_csv('hourly_weather/temperature.csv')
-display(df)
+df1 = pd.read_csv('hourly_weather/temperature.csv')
+display(df1)
+
+df2 = pd.read_csv('hourly_weather/pressure.csv')
+display(df2)
+
+df3 = df2.merge(df1, on='datetime') # ah-ha!
+display(df3)
