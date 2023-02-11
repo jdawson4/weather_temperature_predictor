@@ -27,6 +27,7 @@ df = pd.read_csv('hourly_weather/temperature.csv')
 
 y = df['New York'] # let's try to predict the temps in New York!
 y = pd.to_numeric(y)
+y = y.fillna(value=-1)
 #print(y)
 
 i=0
@@ -79,4 +80,6 @@ X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.25, rando
 
 df = df.shift(periods=-24, fill_value=-1)
 dfs = np.array_split(df, (df.shape[0]//24)//7) # break into weeks
+y = np.array_split(y, (df.shape[0]//24)//7)
 print(dfs)
+print(y)
