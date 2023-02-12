@@ -19,11 +19,6 @@ def loadData():
 
     df = pd.read_csv('hourly_weather/temperature.csv')
 
-    y = df['New York'] # let's try to predict the temps in New York!
-    y = pd.to_numeric(y)
-    y = y.fillna(value=-1)
-    #print(y)
-
     i=0
     for k,v in list_of_files.items():
         if k=='temperature.csv':
@@ -50,3 +45,5 @@ def loadData():
 
         i+=1
         df = df.merge(pd.read_csv(v), on='datetime', suffixes=(None,str(i)))
+    
+    return df
