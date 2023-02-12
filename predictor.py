@@ -86,13 +86,15 @@ X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.25, rando
 #print(df.shape)
 
 df = df.shift(periods=-24, fill_value=-1)
+'''
 df = df.iloc[0:(df.shape[0]//(7*24))*24*7]
 dfs = np.array(np.array_split(df, (df.shape[0]//24)//7)) # break into weeks
 dfs = np.reshape(dfs, (-1, dfs.shape[1] * dfs.shape[2])) # painful! I hate to do it!
 y = y[0:(y.size//(7*24))*24*7]
 y = np.reshape(np.array(y), (-1,7*24))
+'''
 
-X_train, X_test, y_train, y_test = train_test_split(dfs, y[:,1], test_size=0.25, random_state=seed, shuffle=True)
+X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.25, random_state=seed, shuffle=True)
 regr = RandomForestRegressor(max_depth=10, random_state=seed, n_estimators=25)
 
 print('Fitting model')
