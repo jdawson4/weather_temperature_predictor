@@ -13,7 +13,7 @@ seed = 3
 chunked_length = 24 * 7 # the number of hours our model can see for prediction
 batch_size = 128
 epoch_interval = 2
-learnRate = 0.0005 # adam's default is 0.001
+learnRate = 0.00001 # adam's default is 0.001
 
 
 def loadData():
@@ -75,20 +75,20 @@ def lstmArchitecture():
     '''
     This will return a model using an LSTM-based architecture
     '''
+    init = keras.initializers.RandomNormal(seed=seed)
     input = keras.layers.Input(shape=(chunked_length,180), dtype=tf.float16)
 
-    output = keras.layers.LSTM(128, activation=None, return_sequences=True)(input)
-    output = keras.layers.Activation('tanh')(output)
+    output = keras.layers.LSTM(128, activation='selu', return_sequences=True, kernel_initializer=init)(input)
     #output = keras.layers.BatchNormalization()(output)
     #output = keras.layers.Dropout(0.25)(output)
-    output = keras.layers.LSTM(64, activation=None, return_sequences=True)(output)
-    output = keras.layers.Activation('tanh')(output)
+    output = keras.layers.LSTM(64, activation='selu', return_sequences=True, kernel_initializer=init)(output)
     #output = keras.layers.BatchNormalization()(output)
     #output = keras.layers.Dropout(0.25)(output)
-    output = keras.layers.LSTM(32, activation=None, return_sequences=True)(output)
-    output = keras.layers.Activation('tanh')(output)
+    output = keras.layers.LSTM(32, activation='selu', return_sequences=True, kernel_initializer=init)(output)
     #output = keras.layers.BatchNormalization()(output)
-    output = keras.layers.LSTM(180, activation=None, return_sequences=False)(output)
+    #output = keras.layers.LSTM(180, activation=None, return_sequences=False, kernel_initializer=init)(output)
+    output = keras.layers.Flatten()(output)
+    output = keras.layers.Dense(180, activation=None)(output)
 
     return keras.Model(inputs=input, outputs=output, name='predictor')
 

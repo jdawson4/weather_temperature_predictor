@@ -14,9 +14,9 @@ import pandas as pd
 from constants import *
 
 # from IPython.display import display
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import r2_score
+#from sklearn.model_selection import train_test_split
+#from sklearn.metrics import mean_absolute_error
+#from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
 
 df = loadData()
@@ -41,18 +41,16 @@ testX = X[int(len(X)*0.75):]
 trainy = y[:int(len(y)*0.75)]
 testy = y[int(len(y)*0.75):]
 
-print(trainX)
-print(trainy)
-print(testX)
-print(testy)
+#print(trainX)
+#print(trainy)
+#print(testX)
+#print(testy)
 
-'''
-X_train, X_test, y_train, y_test = train_test_split(
-    df, y, test_size=0.25, random_state=seed, shuffle=True
-)
-'''
+print("X contains nans:",(np.isnan(trainX).any()))
+print("y contains nans:",(np.isnan(trainy).any()))
 
-print('Fitting model')
+
+print('Making model')
 model = lstmArchitecture()
 
 class EveryKCallback(keras.callbacks.Callback):
@@ -70,6 +68,7 @@ model.compile(
     #run_eagerly=True,
 )
 
+print('Training model')
 history = model.fit(
     x=trainX,
     y=trainy,
@@ -77,7 +76,7 @@ history = model.fit(
     epochs=10,
     callbacks=[EveryKCallback()],
     validation_data=(testX, testy),
-    shuffle=True,
+    shuffle=False,
 )
 
 # when we're ready to make some predictions, this code will be waiting for us:
