@@ -5,8 +5,15 @@
 
 import os
 import pandas as pd
+import tensorflow as tf
+from tensorflow import keras
+import numpy as np
 
 seed = 3
+chunked_length = 24 * 7 # the number of hours our model can see for prediction
+batch_size = 128
+epoch_interval = 2
+learnRate = 0.0005 # adam's default is 0.001
 
 
 def loadData():
@@ -48,3 +55,45 @@ def loadData():
         df = df.merge(pd.read_csv(v), on="datetime", suffixes=(None, str(i)))
 
     return df
+
+def chunk(X, y):
+    '''
+    Given some X,y with the shape (timesteps, features), we return a chunked X
+    with the shape (num_examples,chunked_length,features) and some y with the
+    shape (num_examples,features)
+    '''
+    newX = []
+    newy = []
+    for i in range(0, len(X)-chunked_length, 1):
+        newX.append(X[i:i+chunked_length,:])
+        newy.append(y[i+chunked_length,:])
+    newX = np.array(newX)
+    newy = np.array(newy)
+    return newX, newy
+
+def lstmArchitecture():
+    '''
+    This will return a model using an LSTM-based architecture
+    '''
+    input = keras.layers.Input(shape=(chunked_length,180), dtype=tf.float16)
+
+    output = keras.layers.LSTM(128, activation=None, return_sequences=True)(input)
+    output = keras.layers.Activation('tanh')(output)
+    #output = keras.layers.BatchNormalization()(output)
+    #output = keras.layers.Dropout(0.25)(output)
+    output = keras.layers.LSTM(64, activation=None, return_sequences=True)(output)
+    output = keras.layers.Activation('tanh')(output)
+    #output = keras.layers.BatchNormalization()(output)
+    #output = keras.layers.Dropout(0.25)(output)
+    output = keras.layers.LSTM(32, activation=None, return_sequences=True)(output)
+    output = keras.layers.Activation('tanh')(output)
+    #output = keras.layers.BatchNormalization()(output)
+    output = keras.layers.LSTM(180, activation=None, return_sequences=False)(output)
+
+    return keras.Model(inputs=input, outputs=output, name='predictor')
+
+if __name__=='__main__':
+    #df = loadData()
+    #print(df.shape)
+    arch = lstmArchitecture()
+    arch.summary()

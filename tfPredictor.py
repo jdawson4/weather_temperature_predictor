@@ -17,12 +17,9 @@ from constants import *
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
+from sklearn.preprocessing import StandardScaler
 
 df = loadData()
-y = df["New York"]  # let's try to predict the temps in New York!
-y = pd.to_numeric(y)
-y = y.fillna(value=-1)
-
 print("Preprocessing data")
 
 # we don't want to let it cheat by looking at the date:
@@ -31,10 +28,56 @@ df = df.drop(["datetime"], axis=1)
 df = df.apply(pd.to_numeric, errors="raise", downcast="float")
 df = df.fillna(-1)
 
-df = df.shift(periods=-24, fill_value=-1)
+y = df.shift(periods=24, fill_value=-1) # we try to predict 24 hours ahead
 
+scaler = StandardScaler().fit(df)
+df = scaler.transform(df)
+y = scaler.transform(y)
+
+X, y = chunk(df, y)
+trainX = X[:int(len(X)*0.75)]
+testX = X[int(len(X)*0.75):]
+
+trainy = y[:int(len(y)*0.75)]
+testy = y[int(len(y)*0.75):]
+
+print(trainX)
+print(trainy)
+print(testX)
+print(testy)
+
+'''
 X_train, X_test, y_train, y_test = train_test_split(
     df, y, test_size=0.25, random_state=seed, shuffle=True
+)
+'''
+
+print('Fitting model')
+model = lstmArchitecture()
+
+class EveryKCallback(keras.callbacks.Callback):
+    def __init__(self,epoch_interval=epoch_interval):
+        self.epoch_interval = epoch_interval
+    def on_epoch_begin(self,epoch,logs=None):
+        if ((epoch % self.epoch_interval)==0):
+            self.model.save_weights("ckpts/ckpt"+str(epoch), overwrite=True, save_format='h5')
+            #self.model.save('network',overwrite=True)
+
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=learnRate),
+    loss=tf.keras.losses.MeanSquaredError(),
+    metrics=[tf.keras.metrics.RootMeanSquaredError(), 'accuracy'],
+    #run_eagerly=True,
+)
+
+history = model.fit(
+    x=trainX,
+    y=trainy,
+    batch_size=batch_size,
+    epochs=10,
+    callbacks=[EveryKCallback()],
+    validation_data=(testX, testy),
+    shuffle=True,
 )
 
 # when we're ready to make some predictions, this code will be waiting for us:
