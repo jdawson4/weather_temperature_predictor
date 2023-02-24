@@ -29,6 +29,7 @@ df = df.apply(pd.to_numeric, errors="raise", downcast="float")
 df = df.fillna(-1)
 
 y = df.shift(periods=24, fill_value=-1) # we try to predict 24 hours ahead
+#y = np.array(y["New York"])
 
 scaler = StandardScaler().fit(df)
 df = scaler.transform(df)
@@ -52,6 +53,7 @@ print("y contains nans:",(np.isnan(trainy).any()))
 
 print('Making model')
 model = lstmArchitecture()
+model.summary()
 
 class EveryKCallback(keras.callbacks.Callback):
     def __init__(self,epoch_interval=epoch_interval):
@@ -76,7 +78,7 @@ history = model.fit(
     epochs=10,
     callbacks=[EveryKCallback()],
     validation_data=(testX, testy),
-    shuffle=False,
+    shuffle=True,
 )
 
 # when we're ready to make some predictions, this code will be waiting for us:

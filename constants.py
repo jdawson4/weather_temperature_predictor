@@ -67,9 +67,20 @@ def chunk(X, y):
     for i in range(0, len(X)-chunked_length, 1):
         newX.append(X[i:i+chunked_length,:])
         newy.append(y[i+chunked_length,:])
+        #newy.append(y[i+chunked_length])
     newX = np.array(newX)
     newy = np.array(newy)
     return newX, newy
+
+def printNanAndReturn(x, num):
+    print("FOUND NAN AT", num)
+    return x
+
+def anyNans(x, num):
+    return tf.cond(pred=lambda x: tf.reduce_any(tf.math.is_nan(x)),
+        true_fn=lambda x: printNanAndReturn(x, num),
+        false_fn=lambda x: x
+    )
 
 def lstmArchitecture():
     '''
@@ -77,18 +88,21 @@ def lstmArchitecture():
     '''
     init = keras.initializers.RandomNormal(seed=seed)
     input = keras.layers.Input(shape=(chunked_length,180), dtype=tf.float16)
+    #output = keras.layers.Lambda(lambda x: anyNans(x, 1))(input)
 
-    output = keras.layers.LSTM(128, activation='selu', return_sequences=True, kernel_initializer=init)(input)
+    output = keras.layers.LSTM(180, activation='selu', return_sequences=True, kernel_initializer=init)(input)
+    #output = keras.layers.Lambda(lambda x: anyNans(x, 2))(output)
     #output = keras.layers.BatchNormalization()(output)
     #output = keras.layers.Dropout(0.25)(output)
-    output = keras.layers.LSTM(64, activation='selu', return_sequences=True, kernel_initializer=init)(output)
+    output = keras.layers.LSTM(180, activation='selu', return_sequences=True, kernel_initializer=init)(output)
+    #output = keras.layers.Lambda(lambda x: anyNans(x, 3))(output)
     #output = keras.layers.BatchNormalization()(output)
     #output = keras.layers.Dropout(0.25)(output)
-    output = keras.layers.LSTM(32, activation='selu', return_sequences=True, kernel_initializer=init)(output)
+    output = keras.layers.LSTM(180, activation='selu', return_sequences=True, kernel_initializer=init)(output)
+    #output = keras.layers.Lambda(lambda x: anyNans(x, 4))(output)
     #output = keras.layers.BatchNormalization()(output)
-    #output = keras.layers.LSTM(180, activation=None, return_sequences=False, kernel_initializer=init)(output)
-    output = keras.layers.Flatten()(output)
-    output = keras.layers.Dense(180, activation=None)(output)
+    output = keras.layers.LSTM(180, activation=None, return_sequences=False, kernel_initializer=init)(output)
+    #output = keras.layers.Lambda(lambda x: anyNans(x, 5))(output)
 
     return keras.Model(inputs=input, outputs=output, name='predictor')
 
