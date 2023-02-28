@@ -72,37 +72,22 @@ def chunk(X, y):
     newy = np.array(newy)
     return newX, newy
 
-def printNanAndReturn(x, num):
-    print("FOUND NAN AT", num)
-    return x
-
-def anyNans(x, num):
-    return tf.cond(pred=lambda x: tf.reduce_any(tf.math.is_nan(x)),
-        true_fn=lambda x: printNanAndReturn(x, num),
-        false_fn=lambda x: x
-    )
-
 def lstmArchitecture():
     '''
     This will return a model using an LSTM-based architecture
     '''
     init = keras.initializers.RandomNormal(seed=seed)
     input = keras.layers.Input(shape=(chunked_length,180), dtype=tf.float16)
-    #output = keras.layers.Lambda(lambda x: anyNans(x, 1))(input)
 
     output = keras.layers.LSTM(180, activation='selu', return_sequences=True, kernel_initializer=init)(input)
-    #output = keras.layers.Lambda(lambda x: anyNans(x, 2))(output)
     #output = keras.layers.BatchNormalization()(output)
     #output = keras.layers.Dropout(0.25)(output)
     output = keras.layers.LSTM(180, activation='selu', return_sequences=True, kernel_initializer=init)(output)
-    #output = keras.layers.Lambda(lambda x: anyNans(x, 3))(output)
     #output = keras.layers.BatchNormalization()(output)
     #output = keras.layers.Dropout(0.25)(output)
     output = keras.layers.LSTM(180, activation='selu', return_sequences=True, kernel_initializer=init)(output)
-    #output = keras.layers.Lambda(lambda x: anyNans(x, 4))(output)
     #output = keras.layers.BatchNormalization()(output)
     output = keras.layers.LSTM(180, activation=None, return_sequences=False, kernel_initializer=init)(output)
-    #output = keras.layers.Lambda(lambda x: anyNans(x, 5))(output)
 
     return keras.Model(inputs=input, outputs=output, name='predictor')
 

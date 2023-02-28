@@ -15,7 +15,6 @@ from constants import *
 
 # from IPython.display import display
 #from sklearn.model_selection import train_test_split
-#from sklearn.metrics import mean_absolute_error
 #from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import maxabs_scale
@@ -30,7 +29,6 @@ df = df.apply(pd.to_numeric, errors="raise", downcast="float")
 df = df.fillna(-1)
 
 y = df.shift(periods=24, fill_value=-1) # we try to predict 24 hours ahead
-#y = np.array(y["New York"])
 
 scaler = StandardScaler().fit(df)
 df = maxabs_scale(scaler.transform(df))
@@ -42,11 +40,6 @@ testX = X[int(len(X)*0.75):]
 
 trainy = y[:int(len(y)*0.75)]
 testy = y[int(len(y)*0.75):]
-
-#print(trainX)
-#print(trainy)
-#print(testX)
-#print(testy)
 
 print("X contains nans:",(np.isnan(trainX).any()))
 print("y contains nans:",(np.isnan(trainy).any()))
@@ -68,7 +61,6 @@ model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=learnRate),
     loss=tf.keras.losses.MeanSquaredError(),
     metrics=[tf.keras.metrics.RootMeanSquaredError(), 'accuracy'],
-    #run_eagerly=True,
 )
 
 print('Training model')
@@ -81,12 +73,3 @@ history = model.fit(
     validation_data=(testX, testy),
     shuffle=True,
 )
-
-# when we're ready to make some predictions, this code will be waiting for us:
-"""
-score = mean_absolute_error(y_test, y_pred)
-r2Score = r2_score(y_test, y_pred)
-
-print('Score', score)
-print('r2Score', r2Score)
-"""
