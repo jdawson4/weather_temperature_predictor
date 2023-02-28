@@ -41,10 +41,6 @@ testX = X[int(len(X)*0.75):]
 trainy = y[:int(len(y)*0.75)]
 testy = y[int(len(y)*0.75):]
 
-print("X contains nans:",(np.isnan(trainX).any()))
-print("y contains nans:",(np.isnan(trainy).any()))
-
-
 print('Making model')
 model = lstmArchitecture()
 model.summary()
