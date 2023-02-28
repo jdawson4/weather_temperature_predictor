@@ -18,6 +18,7 @@ from constants import *
 #from sklearn.metrics import mean_absolute_error
 #from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import maxabs_scale
 
 df = loadData()
 print("Preprocessing data")
@@ -32,8 +33,8 @@ y = df.shift(periods=24, fill_value=-1) # we try to predict 24 hours ahead
 #y = np.array(y["New York"])
 
 scaler = StandardScaler().fit(df)
-df = scaler.transform(df)
-y = scaler.transform(y)
+df = maxabs_scale(scaler.transform(df))
+y = maxabs_scale(scaler.transform(y))
 
 X, y = chunk(df, y)
 trainX = X[:int(len(X)*0.75)]
