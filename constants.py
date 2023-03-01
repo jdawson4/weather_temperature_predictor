@@ -15,6 +15,8 @@ batch_size = 256
 epoch_interval = 2
 learnRate = 0.001 # adam's default is 0.001
 epochs = 50
+internal_layers = 128
+dropout = 0.5
 
 
 def loadData():
@@ -79,10 +81,10 @@ def lstmArchitecture():
     '''
     init = keras.initializers.RandomNormal(seed=seed)
     input = keras.layers.Input(shape=(chunked_length,180), dtype=tf.float16)
-    output = keras.layers.Dropout(0.5)(input)
-    output = keras.layers.LSTM(128, activation='selu', return_sequences=True, kernel_initializer=init)(output)
-    output = keras.layers.Dropout(0.5)(output)
-    output = keras.layers.LSTM(128, activation='selu', return_sequences=True, kernel_initializer=init)(output)
+    output = keras.layers.Dropout(dropout)(input)
+    output = keras.layers.LSTM(internal_layers, activation='selu', return_sequences=True, kernel_initializer=init)(output)
+    output = keras.layers.Dropout(dropout)(output)
+    output = keras.layers.LSTM(internal_layers, activation='selu', return_sequences=True, kernel_initializer=init)(output)
     output = keras.layers.LSTM(180, activation=None, return_sequences=False, kernel_initializer=init)(output)
 
     return keras.Model(inputs=input, outputs=output, name='predictor')
