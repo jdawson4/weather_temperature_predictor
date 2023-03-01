@@ -16,8 +16,10 @@ from constants import *
 # from IPython.display import display
 #from sklearn.model_selection import train_test_split
 #from sklearn.metrics import r2_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MaxAbsScaler
 from sklearn.preprocessing import maxabs_scale
+
+#TF_GPU_ALLOCATOR=cuda_malloc_async
 
 df = loadData()
 print("Preprocessing data")
@@ -30,9 +32,9 @@ df = df.fillna(-1)
 
 y = df.shift(periods=24, fill_value=-1) # we try to predict 24 hours ahead
 
-scaler = StandardScaler().fit(df)
-df = maxabs_scale(scaler.transform(df))
-y = maxabs_scale(scaler.transform(y))
+scaler = MaxAbsScaler().fit(df)
+df = scaler.transform(df)
+y = scaler.transform(y)
 
 X, y = chunk(df, y)
 trainX = X[:int(len(X)*0.75)]
@@ -64,7 +66,7 @@ history = model.fit(
     x=trainX,
     y=trainy,
     batch_size=batch_size,
-    epochs=10,
+    epochs=epochs,
     callbacks=[EveryKCallback()],
     validation_data=(testX, testy),
     shuffle=True,
