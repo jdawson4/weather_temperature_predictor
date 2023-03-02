@@ -44,7 +44,8 @@ trainy = y[:int(len(y)*0.75)]
 testy = y[int(len(y)*0.75):]
 
 print('Making model')
-model = lstmArchitecture()
+#model = lstmArchitecture()
+model = attentionArchitecture()
 model.summary()
 
 class EveryKCallback(keras.callbacks.Callback):
@@ -52,8 +53,8 @@ class EveryKCallback(keras.callbacks.Callback):
         self.epoch_interval = epoch_interval
     def on_epoch_begin(self,epoch,logs=None):
         if ((epoch % self.epoch_interval)==0):
-            self.model.save_weights("ckpts/ckpt"+str(epoch), overwrite=True, save_format='h5')
-            #self.model.save('network',overwrite=True)
+            #self.model.save_weights("ckpts/ckpt"+str(epoch), overwrite=True, save_format='h5')
+            self.model.save('network',overwrite=True)
 
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=learnRate),

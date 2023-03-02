@@ -12,7 +12,7 @@ import numpy as np
 seed = 3
 chunked_length = 24 * 3 # the number of hours our model can see for prediction
 batch_size = 256
-epoch_interval = 2
+epoch_interval = 5
 learnRate = 0.001 # adam's default is 0.001
 epochs = 50
 internal_layers = 128
@@ -87,10 +87,35 @@ def lstmArchitecture():
     output = keras.layers.LSTM(internal_layers, activation='selu', return_sequences=True, kernel_initializer=init)(output)
     output = keras.layers.LSTM(180, activation=None, return_sequences=False, kernel_initializer=init)(output)
 
+def attnLayer(input,kernelInit,heads=4,kDim=64,out_shape=128):
+    output = keras.layers.MultiHeadAttention(num_heads=heads, key_dim=kDim, output_shape=out_shape, kernel_initializer=kernelInit)(input, input)
+    output = keras.layers.LayerNormalization()(output)
+    output = keras.layers.Dense(units=out_shape, activation=None, kernel_initializer=kernelInit)(output)
+    output = keras.layers.Activation('selu')(output)
+    output = keras.layers.Dropout(dropout)(output)
+    return output
+
+def attentionArchitecture():
+    '''
+    This will return a model using an attention-based architecture
+    '''
+    init = keras.initializers.RandomNormal(seed=seed)
+    input = keras.layers.Input(shape=(chunked_length,180), dtype=tf.float16)
+    a1 = attnLayer(input=input, kernelInit=init)
+    a2 = attnLayer(input=a1, kernelInit=init)
+    a3 = attnLayer(input=keras.layers.Add()([a1,a2]), kernelInit=init)
+    a4 = attnLayer(input=keras.layers.Add()([a1,a2,a3]), kernelInit=init)
+    a5 = attnLayer(input=keras.layers.Add()([a1,a2,a3,a4]), kernelInit=init)
+    a6 = attnLayer(input=keras.layers.Add()([a1,a2,a3,a4,a5]), kernelInit=init)
+    output = keras.layers.GlobalAveragePooling1D()(a6)
+    output = keras.layers.Dense(units=180, activation=None, kernel_initializer=init)(output)
+    # output shape needs to be [None, 180] btw
+
     return keras.Model(inputs=input, outputs=output, name='predictor')
 
 if __name__=='__main__':
     #df = loadData()
     #print(df.shape)
-    arch = lstmArchitecture()
+    #arch = lstmArchitecture()
+    arch = attentionArchitecture()
     arch.summary()
