@@ -72,3 +72,19 @@ history = model.fit(
     validation_data=(testX, testy),
     shuffle=True,
 )
+
+model.save('network', overwrite=True)
+
+print("VAL SET ONLY:")
+model.evaluate(
+    x=testX,
+    y=testy,
+    batch_size=batch_size,
+)
+
+print("WHOLE SET:")
+model.evaluate(
+    x=X,
+    y=y,
+    batch_size=batch_size,
+)
