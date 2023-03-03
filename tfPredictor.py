@@ -14,12 +14,12 @@ import pandas as pd
 from constants import *
 
 # from IPython.display import display
-#from sklearn.model_selection import train_test_split
-#from sklearn.metrics import r2_score
+# from sklearn.model_selection import train_test_split
+# from sklearn.metrics import r2_score
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.preprocessing import maxabs_scale
 
-#TF_GPU_ALLOCATOR=cuda_malloc_async
+# TF_GPU_ALLOCATOR=cuda_malloc_async
 
 df = loadData()
 print("Preprocessing data")
@@ -30,39 +30,42 @@ df = df.drop(["datetime"], axis=1)
 df = df.apply(pd.to_numeric, errors="raise", downcast="float")
 df = df.fillna(-1)
 
-y = df.shift(periods=24, fill_value=-1) # we try to predict 24 hours ahead
+y = df.shift(periods=24, fill_value=-1)  # we try to predict 24 hours ahead
 
 scaler = MaxAbsScaler().fit(df)
 df = scaler.transform(df)
 y = scaler.transform(y)
 
 X, y = chunk(df, y)
-trainX = X[:int(len(X)*0.75)]
-testX = X[int(len(X)*0.75):]
+trainX = X[: int(len(X) * 0.75)]
+testX = X[int(len(X) * 0.75) :]
 
-trainy = y[:int(len(y)*0.75)]
-testy = y[int(len(y)*0.75):]
+trainy = y[: int(len(y) * 0.75)]
+testy = y[int(len(y) * 0.75) :]
 
-print('Making model')
-#model = lstmArchitecture()
+print("Making model")
+# model = lstmArchitecture()
 model = attentionArchitecture()
 model.summary()
 
+
 class EveryKCallback(keras.callbacks.Callback):
-    def __init__(self,epoch_interval=epoch_interval):
+    def __init__(self, epoch_interval=epoch_interval):
         self.epoch_interval = epoch_interval
-    def on_epoch_begin(self,epoch,logs=None):
-        if ((epoch % self.epoch_interval)==0):
-            #self.model.save_weights("ckpts/ckpt"+str(epoch), overwrite=True, save_format='h5')
-            self.model.save('network',overwrite=True)
+
+    def on_epoch_begin(self, epoch, logs=None):
+        if (epoch % self.epoch_interval) == 0:
+            # self.model.save_weights("ckpts/ckpt"+str(epoch), overwrite=True, save_format='h5')
+            self.model.save("network", overwrite=True)
+
 
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=learnRate),
     loss=tf.keras.losses.MeanSquaredError(),
-    metrics=[tf.keras.metrics.RootMeanSquaredError(), 'accuracy'],
+    metrics=[tf.keras.metrics.RootMeanSquaredError(), "accuracy"],
 )
 
-print('Training model')
+print("Training model")
 history = model.fit(
     x=trainX,
     y=trainy,
@@ -73,7 +76,7 @@ history = model.fit(
     shuffle=True,
 )
 
-model.save('network', overwrite=True)
+model.save("network", overwrite=True)
 
 print("VAL SET ONLY:")
 model.evaluate(
