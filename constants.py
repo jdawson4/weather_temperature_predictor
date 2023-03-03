@@ -131,9 +131,15 @@ def attentionArchitecture():
     a5 = attnLayer(input=keras.layers.Add()([a1, a2, a3, a4]), kernelInit=init)
     a6 = attnLayer(input=keras.layers.Add()([a1, a2, a3, a4, a5]), kernelInit=init)
     a7 = attnLayer(input=keras.layers.Add()([a1, a2, a3, a4, a5, a6]), kernelInit=init)
-    a8 = attnLayer(input=keras.layers.Add()([a1, a2, a3, a4, a5, a6, a7]), kernelInit=init)
-    a9 = attnLayer(input=keras.layers.Add()([a1, a2, a3, a4, a5, a6, a7, a8]), kernelInit=init)
-    a10 = attnLayer(input=keras.layers.Add()([a1, a2, a3, a4, a5, a6, a7, a8, a9]), kernelInit=init)
+    a8 = attnLayer(
+        input=keras.layers.Add()([a1, a2, a3, a4, a5, a6, a7]), kernelInit=init
+    )
+    a9 = attnLayer(
+        input=keras.layers.Add()([a1, a2, a3, a4, a5, a6, a7, a8]), kernelInit=init
+    )
+    a10 = attnLayer(
+        input=keras.layers.Add()([a1, a2, a3, a4, a5, a6, a7, a8, a9]), kernelInit=init
+    )
     output = keras.layers.GlobalAveragePooling1D()(a10)
     output = keras.layers.Dense(units=180, activation=None, kernel_initializer=init)(
         output
