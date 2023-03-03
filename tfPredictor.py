@@ -8,40 +8,20 @@
 # for the entire US, what is the temperature/precipitation/cloud cover/pressure
 # in New York on a certain day?
 
-import pandas as pd
+#import pandas as pd
 
 # import numpy as np
+import matplotlib.pyplot as plt
 from constants import *
 
 # from IPython.display import display
 # from sklearn.model_selection import train_test_split
 # from sklearn.metrics import r2_score
-from sklearn.preprocessing import MaxAbsScaler
-from sklearn.preprocessing import maxabs_scale
 
 # TF_GPU_ALLOCATOR=cuda_malloc_async
 
-df = loadData()
-print("Preprocessing data")
-
-# we don't want to let it cheat by looking at the date:
-df = df.drop(["datetime"], axis=1)
-# and encode all as numeric:
-df = df.apply(pd.to_numeric, errors="raise", downcast="float")
-df = df.fillna(-1)
-
-y = df.shift(periods=24, fill_value=-1)  # we try to predict 24 hours ahead
-
-scaler = MaxAbsScaler().fit(df)
-df = scaler.transform(df)
-y = scaler.transform(y)
-
-X, y = chunk(df, y)
-trainX = X[: int(len(X) * 0.75)]
-testX = X[int(len(X) * 0.75) :]
-
-trainy = y[: int(len(y) * 0.75)]
-testy = y[int(len(y) * 0.75) :]
+# all our data handling goes here:
+trainX, trainy, testX, testy = preprocess(loadData())
 
 print("Making model")
 # model = lstmArchitecture()
@@ -78,16 +58,19 @@ history = model.fit(
 
 model.save("network", overwrite=True)
 
-print("VAL SET ONLY:")
-model.evaluate(
-    x=testX,
-    y=testy,
-    batch_size=batch_size,
-)
+# found this code in a tutorial forever ago, might be cool to use here:
+def visualize_loss(history, title):
+    loss = history.history["loss"]
+    val_loss = history.history["val_loss"]
+    epochs = range(len(loss))
+    plt.figure()
+    plt.plot(epochs, loss, "b", label="Training loss")
+    plt.plot(epochs, val_loss, "r", label="Validation loss")
+    plt.title(title)
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.show()
 
-print("WHOLE SET:")
-model.evaluate(
-    x=X,
-    y=y,
-    batch_size=batch_size,
-)
+
+visualize_loss(history, "Training and Validation Loss")
