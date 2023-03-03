@@ -41,24 +41,24 @@ def loadData():
             continue
 
         # we need to handle strings and floats differently
-        if k=='weather_description.csv':
-            i+=1
+        if k == "weather_description.csv":
+            i += 1
             string_df = pd.read_csv(v)
             enc = LabelEncoder()
-            df_without_datetime = string_df.drop(['datetime'], axis=1)
+            df_without_datetime = string_df.drop(["datetime"], axis=1)
             encoding_data = df_without_datetime.to_numpy().flatten()
             enc.fit(encoding_data)
             for column in df_without_datetime.columns:
-                #print(column)
-                if column=='datetime':
+                # print(column)
+                if column == "datetime":
                     continue
                 string_df[column] = enc.transform(df_without_datetime[column])
-            #display(string_df)
-            df = df.merge(string_df, on="datetime", suffixes=(None, '_'+k[:-4]))
+            # display(string_df)
+            df = df.merge(string_df, on="datetime", suffixes=(None, "_" + k[:-4]))
             continue
 
         i += 1
-        df = df.merge(pd.read_csv(v), on="datetime", suffixes=(None, '_'+k[:-4]))
+        df = df.merge(pd.read_csv(v), on="datetime", suffixes=(None, "_" + k[:-4]))
 
     return df
 
@@ -78,6 +78,7 @@ def chunk(X, y):
     newX = np.array(newX)
     newy = np.array(newy)
     return newX, newy
+
 
 def preprocess(df):
     print("Preprocessing data")
@@ -160,16 +161,22 @@ def attentionArchitecture():
     a3 = attnLayer(input=keras.layers.Concatenate()([a1, a2]), kernelInit=init)
     a4 = attnLayer(input=keras.layers.Concatenate()([a1, a2, a3]), kernelInit=init)
     a5 = attnLayer(input=keras.layers.Concatenate()([a1, a2, a3, a4]), kernelInit=init)
-    a6 = attnLayer(input=keras.layers.Concatenate()([a1, a2, a3, a4, a5]), kernelInit=init)
-    a7 = attnLayer(input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6]), kernelInit=init)
+    a6 = attnLayer(
+        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5]), kernelInit=init
+    )
+    a7 = attnLayer(
+        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6]), kernelInit=init
+    )
     a8 = attnLayer(
         input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7]), kernelInit=init
     )
     a9 = attnLayer(
-        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8]), kernelInit=init
+        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8]),
+        kernelInit=init,
     )
     a10 = attnLayer(
-        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9]), kernelInit=init
+        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9]),
+        kernelInit=init,
     )
     output = keras.layers.GlobalAveragePooling1D()(a10)
     output = keras.layers.Dense(units=216, activation=None, kernel_initializer=init)(
@@ -181,8 +188,8 @@ def attentionArchitecture():
 
 
 if __name__ == "__main__":
-    #df = loConcatenateata()
-    #display(df)
+    # df = loConcatenateata()
+    # display(df)
     # print(df.shape)
     # arch = lstmArchitecture()
     arch = attentionArchitecture()

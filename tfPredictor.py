@@ -8,7 +8,7 @@
 # for the entire US, what is the temperature/precipitation/cloud cover/pressure
 # in New York on a certain day?
 
-#import pandas as pd
+# import pandas as pd
 
 # import numpy as np
 import matplotlib.pyplot as plt
