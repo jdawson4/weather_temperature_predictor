@@ -13,13 +13,14 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MaxAbsScaler
 
 seed = 3
-chunked_length = 24 * 3  # the number of hours our model can see for prediction
+length_of_seq = 24 * 3  # the number of hours our model can see for prediction
 batch_size = 128
 epoch_interval = 5
 learnRate = 0.001  # adam's default is 0.001
 epochs = 50
 internal_layers = 128
 dropout = 0.5
+fillValue = -100 # we want to choose a relatively unnatural number here
 
 
 def loadData():
@@ -66,15 +67,15 @@ def loadData():
 def chunk(X, y):
     """
     Given some X,y with the shape (timesteps, features), we return a chunked X
-    with the shape (num_examples,chunked_length,features) and some y with the
+    with the shape (num_examples,length_of_seq,features) and some y with the
     shape (num_examples,features)
     """
     newX = []
     newy = []
-    for i in range(0, len(X) - chunked_length, 1):
-        newX.append(X[i : i + chunked_length, :])
-        newy.append(y[i + chunked_length, :])
-        # newy.append(y[i+chunked_length])
+    for i in range(0, len(X) - length_of_seq, 1):
+        newX.append(X[i : i + length_of_seq, :])
+        newy.append(y[i : i + length_of_seq, :])
+        # newy.append(y[i+length_of_seq])
     newX = np.array(newX)
     newy = np.array(newy)
     return newX, newy
@@ -87,9 +88,11 @@ def preprocess(df):
     df = df.drop(["datetime"], axis=1)
     # and encode all as numeric:
     df = df.apply(pd.to_numeric, errors="raise", downcast="float")
-    df = df.fillna(-1)
+    df = df.fillna(fillValue)
 
-    y = df.shift(periods=24, fill_value=-1)  # we try to predict 24 hours ahead
+    y = df.shift(periods=length_of_seq, fill_value=fillValue)
+    # given x days, we're trying to predict x days after that.
+    # therefore, shift by x
 
     scaler = MaxAbsScaler().fit(df)
     df = scaler.transform(df)
@@ -110,7 +113,7 @@ def lstmArchitecture():
     This will return a model using an LSTM-based architecture
     """
     init = keras.initializers.RandomNormal(seed=seed)
-    input = keras.layers.Input(shape=(chunked_length, 216), dtype=tf.float16)
+    input = keras.layers.Input(shape=(length_of_seq, 216), dtype=tf.float16)
     output = keras.layers.Dropout(dropout)(input)
     output = keras.layers.LSTM(
         internal_layers,
@@ -155,7 +158,7 @@ def attentionArchitecture():
     This means faster train time, which is very important for our purposes!
     """
     init = keras.initializers.RandomNormal(seed=seed)
-    input = keras.layers.Input(shape=(chunked_length, 216), dtype=tf.float16)
+    input = keras.layers.Input(shape=(length_of_seq, 216), dtype=tf.float16)
     a1 = attnLayer(input=input, kernelInit=init)
     a2 = attnLayer(input=a1, kernelInit=init)
     a3 = attnLayer(input=keras.layers.Concatenate()([a1, a2]), kernelInit=init)
@@ -178,19 +181,20 @@ def attentionArchitecture():
         input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9]),
         kernelInit=init,
     )
-    output = keras.layers.GlobalAveragePooling1D()(a10)
+    #output = keras.layers.GlobalAveragePooling1D()(a10)
+    output = keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9, a10])
     output = keras.layers.Dense(units=216, activation=None, kernel_initializer=init)(
         output
     )
-    # output shape needs to be [None, 216] btw
 
     return keras.Model(inputs=input, outputs=output, name="predictor")
 
 
 if __name__ == "__main__":
-    # df = loConcatenateata()
-    # display(df)
-    # print(df.shape)
+    #df = loadData()
+    #trainX, trainy, testX, testy = preprocess(df)
+    #display(df)
+    #print(df.shape)
     # arch = lstmArchitecture()
     arch = attentionArchitecture()
     arch.summary()
