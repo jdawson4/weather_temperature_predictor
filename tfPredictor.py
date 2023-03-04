@@ -35,17 +35,19 @@ class EveryKCallback(keras.callbacks.Callback):
 
     def on_epoch_begin(self, epoch, logs=None):
         if (epoch % self.epoch_interval) == 0:
-            self.model.save_weights("ckpts/ckpt"+str(epoch), overwrite=True, save_format='h5')
+            self.model.save_weights(
+                "ckpts/ckpt" + str(epoch), overwrite=True, save_format="h5"
+            )
             self.model.save("network", overwrite=True)
 
 
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=learnRate),
-    #optimizer=tf.keras.optimizers.RMSprop(learning_rate=learnRate),
+    # optimizer=tf.keras.optimizers.RMSprop(learning_rate=learnRate),
     loss=tf.keras.losses.MeanSquaredError(),
-    #loss=tf.keras.losses.CategoricalCrossentropy(),
+    # loss=tf.keras.losses.CategoricalCrossentropy(),
     metrics=[tf.keras.metrics.RootMeanSquaredError()],
-    #metrics=[],
+    # metrics=[],
 )
 
 print("Training model")

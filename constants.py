@@ -110,6 +110,7 @@ def preprocess(df):
     # and the X's
     return trainX, trainy, testX, testy, df, y
 
+
 def lstmArchitecture():
     """
     This will return a model using an LSTM-based architecture
@@ -148,9 +149,9 @@ def attnLayer(input, kernelInit, heads=4, kDim=32, out_shape=128, residual=True)
         output = keras.layers.Add()([input, output])
 
     output = keras.layers.LayerNormalization()(output)
-    #output = keras.layers.Dense(
+    # output = keras.layers.Dense(
     #    units=out_shape, activation=None, kernel_initializer=kernelInit
-    #)(output)
+    # )(output)
     output = tf.keras.layers.Conv1D(
         out_shape,
         1,
@@ -177,15 +178,9 @@ def attentionArchitecture():
     a3 = attnLayer(input=a2, kernelInit=init)
     a4 = attnLayer(input=a3, kernelInit=init)
     a5 = attnLayer(input=a4, kernelInit=init)
-    a6 = attnLayer(
-        input=a5, kernelInit=init
-    )
-    a7 = attnLayer(
-        input=a6, kernelInit=init
-    )
-    a8 = attnLayer(
-        input=a7, kernelInit=init
-    )
+    a6 = attnLayer(input=a5, kernelInit=init)
+    a7 = attnLayer(input=a6, kernelInit=init)
+    a8 = attnLayer(input=a7, kernelInit=init)
     a9 = attnLayer(
         input=a8,
         kernelInit=init,
@@ -196,21 +191,22 @@ def attentionArchitecture():
     )
     # output = keras.layers.GlobalAveragePooling1D()(a10)
     output = keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9, a10])
-    #output = keras.layers.Concatenate()([a1, a2, a3, a4, a5])
+    # output = keras.layers.Concatenate()([a1, a2, a3, a4, a5])
     output = keras.layers.Dense(units=216, activation=None, kernel_initializer=init)(
         output
     )
 
     return keras.Model(inputs=input, outputs=output, name="predictor")
 
+
 # this is just for testing the above functions
 if __name__ == "__main__":
     pass
     df = loadData()
-    #trainX, trainy, testX, testy, df, y = preprocess(df)
+    # trainX, trainy, testX, testy, df, y = preprocess(df)
     print(df.columns)
     # display(df)
     # print(df.shape)
     # arch = lstmArchitecture()
-    #arch = attentionArchitecture()
-    #arch.summary()
+    # arch = attentionArchitecture()
+    # arch.summary()
