@@ -20,7 +20,7 @@ learnRate = 0.001  # adam's default is 0.001
 epochs = 50
 internal_layers = 128
 dropout = 0.5
-fillValue = -100 # we want to choose a relatively unnatural number here
+fillValue = -100  # we want to choose a relatively unnatural number here
 
 
 def loadData():
@@ -164,7 +164,7 @@ def attentionArchitecture():
     a3 = attnLayer(input=keras.layers.Concatenate()([a1, a2]), kernelInit=init)
     a4 = attnLayer(input=keras.layers.Concatenate()([a1, a2, a3]), kernelInit=init)
     a5 = attnLayer(input=keras.layers.Concatenate()([a1, a2, a3, a4]), kernelInit=init)
-    '''a6 = attnLayer(
+    """a6 = attnLayer(
         input=keras.layers.Concatenate()([a1, a2, a3, a4, a5]), kernelInit=init
     )
     a7 = attnLayer(
@@ -180,9 +180,9 @@ def attentionArchitecture():
     a10 = attnLayer(
         input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9]),
         kernelInit=init,
-    )'''
-    #output = keras.layers.GlobalAveragePooling1D()(a10)
-    #output = keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9, a10])
+    )"""
+    # output = keras.layers.GlobalAveragePooling1D()(a10)
+    # output = keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9, a10])
     output = keras.layers.Concatenate()([a1, a2, a3, a4, a5])
     output = keras.layers.Dense(units=216, activation=None, kernel_initializer=init)(
         output
@@ -192,10 +192,10 @@ def attentionArchitecture():
 
 
 if __name__ == "__main__":
-    #df = loadData()
-    #trainX, trainy, testX, testy = preprocess(df)
-    #display(df)
-    #print(df.shape)
+    # df = loadData()
+    # trainX, trainy, testX, testy = preprocess(df)
+    # display(df)
+    # print(df.shape)
     # arch = lstmArchitecture()
     arch = attentionArchitecture()
     arch.summary()
