@@ -61,6 +61,7 @@ def loadData():
         i += 1
         df = df.merge(pd.read_csv(v), on="datetime", suffixes=(None, "_" + k[:-4]))
 
+    # a quick note: column 28 contains the temperature of New York in df
     return df
 
 
@@ -105,8 +106,9 @@ def preprocess(df):
     trainy = y[: int(len(y) * 0.75)]
     testy = y[int(len(y) * 0.75) :]
 
-    return trainX, trainy, testX, testy
-
+    # a quick note: column 27 contains the temperature of New York in df
+    # and the X's
+    return trainX, trainy, testX, testy, df, y
 
 def lstmArchitecture():
     """
@@ -201,12 +203,14 @@ def attentionArchitecture():
 
     return keras.Model(inputs=input, outputs=output, name="predictor")
 
-
+# this is just for testing the above functions
 if __name__ == "__main__":
-    # df = loadData()
-    # trainX, trainy, testX, testy = preprocess(df)
+    pass
+    df = loadData()
+    #trainX, trainy, testX, testy, df, y = preprocess(df)
+    print(df.columns)
     # display(df)
     # print(df.shape)
     # arch = lstmArchitecture()
-    arch = attentionArchitecture()
-    arch.summary()
+    #arch = attentionArchitecture()
+    #arch.summary()

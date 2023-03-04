@@ -21,7 +21,7 @@ from constants import *
 # TF_GPU_ALLOCATOR=cuda_malloc_async
 
 # all our data handling goes here:
-trainX, trainy, testX, testy = preprocess(loadData())
+trainX, trainy, testX, testy, _, _ = preprocess(loadData())
 
 print("Making model")
 # model = lstmArchitecture()
