@@ -13,13 +13,13 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MaxAbsScaler
 
 seed = 3
-length_of_seq = 24 * 3  # the number of hours our model can see for prediction
-batch_size = 128
+length_of_seq = 24 * 2  # the number of hours our model can see for prediction
+batch_size = 32
 epoch_interval = 5
-learnRate = 0.001  # adam's default is 0.001
+learnRate = 0.00001  # adam's default is 0.001
 epochs = 50
 internal_layers = 128
-dropout = 0.5
+dropout = 0.25
 fillValue = -100  # we want to choose a relatively unnatural number here
 
 
@@ -133,16 +133,27 @@ def lstmArchitecture():
     )(output)
 
 
-def attnLayer(input, kernelInit, heads=4, kDim=64, out_shape=256):
+def attnLayer(input, kernelInit, heads=4, kDim=32, out_shape=128, residual=True):
+    output = keras.layers.LayerNormalization()(input)
     output = keras.layers.MultiHeadAttention(
         num_heads=heads,
         key_dim=kDim,
         output_shape=out_shape,
         kernel_initializer=kernelInit,
-    )(input, input)
+    )(output, output)
+    output = keras.layers.Dropout(dropout)(output)
+    if residual:
+        output = keras.layers.Add()([input, output])
+
     output = keras.layers.LayerNormalization()(output)
-    output = keras.layers.Dense(
-        units=out_shape, activation=None, kernel_initializer=kernelInit
+    #output = keras.layers.Dense(
+    #    units=out_shape, activation=None, kernel_initializer=kernelInit
+    #)(output)
+    output = tf.keras.layers.Conv1D(
+        out_shape,
+        1,
+        strides=1,
+        kernel_initializer=kernelInit,
     )(output)
     output = keras.layers.Activation("selu")(output)
     output = keras.layers.Dropout(dropout)(output)
@@ -151,7 +162,7 @@ def attnLayer(input, kernelInit, heads=4, kDim=64, out_shape=256):
 
 def attentionArchitecture():
     """
-    This will return a model using an attention-based architecture.
+    This will return a model using a self-attention-based architecture.
     Attention-based architecture has a lot of advantages over RNN-based
     architecture, mainly in that it can still perform calculations on
     timeseries data, but it doesn't take nearly as long as RNNs.
@@ -159,31 +170,31 @@ def attentionArchitecture():
     """
     init = keras.initializers.RandomNormal(seed=seed)
     input = keras.layers.Input(shape=(length_of_seq, 216), dtype=tf.float16)
-    a1 = attnLayer(input=input, kernelInit=init)
+    a1 = attnLayer(input=input, kernelInit=init, residual=False)
     a2 = attnLayer(input=a1, kernelInit=init)
-    a3 = attnLayer(input=keras.layers.Concatenate()([a1, a2]), kernelInit=init)
-    a4 = attnLayer(input=keras.layers.Concatenate()([a1, a2, a3]), kernelInit=init)
-    a5 = attnLayer(input=keras.layers.Concatenate()([a1, a2, a3, a4]), kernelInit=init)
-    """a6 = attnLayer(
-        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5]), kernelInit=init
+    a3 = attnLayer(input=a2, kernelInit=init)
+    a4 = attnLayer(input=a3, kernelInit=init)
+    a5 = attnLayer(input=a4, kernelInit=init)
+    a6 = attnLayer(
+        input=a5, kernelInit=init
     )
     a7 = attnLayer(
-        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6]), kernelInit=init
+        input=a6, kernelInit=init
     )
     a8 = attnLayer(
-        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7]), kernelInit=init
+        input=a7, kernelInit=init
     )
     a9 = attnLayer(
-        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8]),
+        input=a8,
         kernelInit=init,
     )
     a10 = attnLayer(
-        input=keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9]),
+        input=a9,
         kernelInit=init,
-    )"""
+    )
     # output = keras.layers.GlobalAveragePooling1D()(a10)
-    # output = keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9, a10])
-    output = keras.layers.Concatenate()([a1, a2, a3, a4, a5])
+    output = keras.layers.Concatenate()([a1, a2, a3, a4, a5, a6, a7, a8, a9, a10])
+    #output = keras.layers.Concatenate()([a1, a2, a3, a4, a5])
     output = keras.layers.Dense(units=216, activation=None, kernel_initializer=init)(
         output
     )
