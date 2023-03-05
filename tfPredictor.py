@@ -42,10 +42,9 @@ class EveryKCallback(keras.callbacks.Callback):
 
 
 model.compile(
-    optimizer=tf.keras.optimizers.Adam(learning_rate=learnRate),
-    # optimizer=tf.keras.optimizers.RMSprop(learning_rate=learnRate),
+    #optimizer=tf.keras.optimizers.Adam(learning_rate=learnRate),
+    optimizer=tf.keras.optimizers.RMSprop(learning_rate=learnRate),
     loss=tf.keras.losses.MeanSquaredError(),
-    # loss=tf.keras.losses.CategoricalCrossentropy(),
     metrics=[tf.keras.metrics.RootMeanSquaredError()],
     # metrics=[],
 )
