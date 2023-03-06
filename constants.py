@@ -132,7 +132,7 @@ def lstmArchitecture():
         kernel_initializer=init,
     )(output)
     output = keras.layers.LSTM(
-        216, activation=None, return_sequences=False, kernel_initializer=init
+        216, activation=None, return_sequences=True, kernel_initializer=init
     )(output)
 
 
